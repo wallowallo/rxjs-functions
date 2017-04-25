@@ -22,6 +22,8 @@ export class AppComponent {
     //use takeUntil to make the observable run until the argument has fired
     .takeUntil(this.stop$);
 
+  data: any = {count: 0};
+
   constructor() {
     //start$ subject to start the interval when it is getting a click
     //switchMap switches to the inner observable after the first observable has fired,
@@ -31,9 +33,11 @@ export class AppComponent {
     //scan gets the {count: 0} and it is being passed in as the first value of the scan
     this.start$
       .switchMapTo(this.intervalThatStops$) //switchMapTo lets you pass in the observable itself without the arrow function
+      .startWith(this.data) //tells the scan what value to start with and fires init at page load
       .scan((acc)=> {
         return {count: acc.count + 1}
-       },{count: 0})
+      }) //,{count: 0}) if you dont need a global variable and an emitted init value
+       //count is being pushed into the subscribe
       .subscribe((x) => console.log(x));
 
 
