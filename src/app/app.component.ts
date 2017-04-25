@@ -27,9 +27,14 @@ export class AppComponent {
     //switchMap switches to the inner observable after the first observable has fired,
     //and only takes values from the most recently projected inner Observable
     //.switchMap((event) => this.interval$);
+    //scan is the proper way to gather data in rxjs
+    //scan gets the {count: 0} and it is being passed in as the first value of the scan
     this.start$
-    .switchMapTo(this.intervalThatStops$) //switchMapTo lets you pass in the observable itself without the arrow function
-    .subscribe((x) => console.log(x));
+      .switchMapTo(this.intervalThatStops$) //switchMapTo lets you pass in the observable itself without the arrow function
+      .scan((acc)=> {
+        return {count: acc.count + 1}
+       },{count: 0})
+      .subscribe((x) => console.log(x));
 
 
       //DO NOT do it like this:
