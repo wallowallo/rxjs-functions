@@ -74,8 +74,9 @@ export class AppComponent {
     Observable.combineLatest(
       this.timer$,
       this.input$,
-      (timer, input) => ({count: timer.count, text: input})
+      (timer: any, input: string) => ({count: timer.count, text: input})
     )
+      .filter((data) => data.count === parseInt(data.text))
       .subscribe((x) => console.log(x));
 
       //DO NOT do it like this:
