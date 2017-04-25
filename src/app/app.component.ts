@@ -59,22 +59,24 @@ export class AppComponent {
       this.reset$.mapTo(this.reset)
   );
 
-  constructor() {
-    //start$ subject to start the interval when it is getting a click
-    //switchMap switches to the inner observable after the first observable has fired,
-    //and only takes values from the most recently projected inner Observable
-    //.switchMap((event) => this.interval$);
-    //scan is the proper way to gather data in rxjs
-    //scan gets the {count: 0} and it is being passed in as the first value of the scan
-  this.starters$
+  //start$ subject to start the interval when it is getting a click
+  //switchMap switches to the inner observable after the first observable has fired,
+  //and only takes values from the most recently projected inner Observable
+  //.switchMap((event) => this.interval$);
+  //scan is the proper way to gather data in rxjs
+  //scan gets the {count: 0} and it is being passed in as the first value of the scan
+  timer$ = this.starters$
       .switchMap(this.intervalActions$) //switchMapTo lets you pass in the observable itself without the arrow function
       .startWith(this.data) //tells the scan what value to start with and fires init at page load
-      .scan((acc, curr) => curr(acc)) //,{count: 0}) if you dont need a global variable and an emitted init value
-      .subscribe((x) => console.log(x)); //count is being pushed into the subscribe
+      .scan((acc, curr) => curr(acc))
 
-
-  this.input$
-    .subscribe((x) => console.log(x))
+  constructor() {
+    Observable.combineLatest(
+      this.timer$,
+      this.input$,
+      (timer, input) => ({count: timer.count, text: input})
+    )
+      .subscribe((x) => console.log(x));
 
       //DO NOT do it like this:
       //Do not use nested observables
