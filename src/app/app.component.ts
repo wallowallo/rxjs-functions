@@ -19,7 +19,8 @@ export class AppComponent {
   startInterval$ = this.start$
     //switchMap switches to the inner observable after the first observable has fired,
     //and only takes values from the most recently projected inner Observable
-    .switchMap((event) => this.interval$);
+    //.switchMap((event) => this.interval$);
+    .switchMapTo(this.interval$); //switchMapTo lets you pass in the observable itself without the arrow function
 
   constructor() {
     //subscribing to the startInterval$ to make it fire
