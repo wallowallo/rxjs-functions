@@ -8,6 +8,6 @@
 
 <button (click)="reset$.next()">reset</button>
 
-<input #input (keyup)="input$.next(input.value)">
+<input #input id="input" (keyup)="input$.next(input.value)" [(ngModel)]="inputValue">
 
 <div>Score: <span>{{score}}</span></div>

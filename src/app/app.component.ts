@@ -29,6 +29,8 @@ export class AppComponent {
 
   score: any = "";
 
+  inputValue: string = "";
+
   //used by intervalThatStops$ to increment each second
   inc = (acc) => { return { count: acc.count + 1 } };
 
@@ -72,18 +74,25 @@ export class AppComponent {
       .startWith(this.data) //tells the scan what value to start with and fires init at page load
       .scan((acc, curr) => curr(acc))
 
-  constructor() {
-    this.timer$
-      .do((x) => console.log(x)) //Do operator allows us to do a side effect
-      .takeWhile((data) => data.count <= 4) //stops the timer stream at count 4
+  runningGame$ = this.timer$
+    .do((x) => console.log(x)) //Do operator allows us to do a side effect
+    .takeWhile((data) => data.count <= 4) //stops the timer stream at count 4
     //   .combineLatest(  //combine latest is waiting for both streams to send values before sending it down the stream
     //     this.input$.do((x) => console.log(x)),
     //     (timer: any, input: string) => ({count: timer.count, text: input})
     //   )
-      .withLatestFrom( //withLatestFrom completes the stream when timer is finished and takes the latest value from the input before sending it down the stream
-        this.input$.do((x) => console.log(x)),
-        (timer: any, input: string) => ({count: timer.count, text: input})
-      )
+    .withLatestFrom( //withLatestFrom completes the stream when timer is finished and takes the latest value from the input before sending it down the stream
+      this.input$.do((x) => console.log(x)),
+      (timer: any, input: string) => ({count: timer.count, text: input})
+    )
+    .share();
+
+  constructor() {
+      this.runningGame$
+        .repeat()
+        .subscribe(() => this.clearInput());
+
+      this.runningGame$
         .filter((data) => data.count === parseInt(data.text)) //filters away all other keyups other than the one that matches the timer
         .reduce((acc, curr) => acc + 1, 0) //reducer is starting with 0 and doing +1 when the reducer runs, which is every element passed down from filter
         //Put repeat usually before subscribe. Nothing under repeat will fire.
@@ -100,5 +109,9 @@ export class AppComponent {
       //   .subscribe(() => {
       //     subscription.unsubscribe();
       //   })
+  }
+
+  clearInput() {
+    this.inputValue = "";
   }
 }
