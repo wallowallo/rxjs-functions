@@ -27,6 +27,8 @@ export class AppComponent {
   //the startWith object
   data: any = {count: 0};
 
+  score: any = "";
+
   //used by intervalThatStops$ to increment each second
   inc = (acc) => { return { count: acc.count + 1 } };
 
@@ -78,15 +80,16 @@ export class AppComponent {
     //     this.input$.do((x) => console.log(x)),
     //     (timer: any, input: string) => ({count: timer.count, text: input})
     //   )
-      .withLatestFrom( //combine latest is waiting for both streams to send values before sending it down the stream
-    //Do operator allows us to do a side effect
+      .withLatestFrom( //withLatestFrom completes the stream when timer is finished and takes the latest value from the input before sending it down the stream
         this.input$.do((x) => console.log(x)),
         (timer: any, input: string) => ({count: timer.count, text: input})
       )
         .filter((data) => data.count === parseInt(data.text)) //filters away all other keyups other than the one that matches the timer
         .reduce((acc, curr) => acc + 1, 0) //reducer is starting with 0 and doing +1 when the reducer runs, which is every element passed down from filter
+        //Put repeat usually before subscribe. Nothing under repeat will fire.
+        .repeat() //repeat is resubscribing to the stream. This stream is never completing. Careful where you put repeat.
         .subscribe(
-          (x) => console.log(x),
+          (x) => {this.score = x},
           err => console.log(err),
           () => console.log('complete')
         );
