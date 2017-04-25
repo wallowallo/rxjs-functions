@@ -21,6 +21,9 @@ export class AppComponent {
 
   quarter$ = new Subject();
 
+  input$ = new Subject()
+    .map((value) => value);
+
   //the startWith object
   data: any = {count: 0};
 
@@ -40,7 +43,21 @@ export class AppComponent {
   incOrReset$ = Observable.merge(
     this.intervalThatStops$.mapTo(this.inc),
     this.reset$.mapTo(this.reset)
-  )
+  );
+
+  //gathering the starters so that our observable trigger reads better
+  starters$ = Observable.merge(
+    this.start$.mapTo(1000),
+    this.half$.mapTo(500),
+    this.quarter$.mapTo(250)
+  );
+
+  //function that lets us merge interval and reset for us to pass to the switchMap
+  intervalActions$ = (time) => Observable.merge(
+    Observable.interval(time)
+      .takeUntil(this.stop$).mapTo(this.inc),
+      this.reset$.mapTo(this.reset)
+  );
 
   constructor() {
     //start$ subject to start the interval when it is getting a click
@@ -49,16 +66,15 @@ export class AppComponent {
     //.switchMap((event) => this.interval$);
     //scan is the proper way to gather data in rxjs
     //scan gets the {count: 0} and it is being passed in as the first value of the scan
-    Observable.merge(
-      this.start$.mapTo(1000),
-       this.half$.mapTo(500),
-       this.quarter$.mapTo(250)
-     )
-      .switchMapTo(this.incOrReset$) //switchMapTo lets you pass in the observable itself without the arrow function
+  this.starters$
+      .switchMap(this.intervalActions$) //switchMapTo lets you pass in the observable itself without the arrow function
       .startWith(this.data) //tells the scan what value to start with and fires init at page load
       .scan((acc, curr) => curr(acc)) //,{count: 0}) if you dont need a global variable and an emitted init value
       .subscribe((x) => console.log(x)); //count is being pushed into the subscribe
 
+
+  this.input$
+    .subscribe((x) => console.log(x))
 
       //DO NOT do it like this:
       //Do not use nested observables

@@ -7,3 +7,5 @@
 <button (click)="stop$.next()">stop</button>
 
 <button (click)="reset$.next()">reset</button>
+
+<input #input (keyup)="input$.next(input.value)">
