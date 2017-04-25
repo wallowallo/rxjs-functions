@@ -10,21 +10,33 @@ import 'rxjs/Rx';
 })
 export class AppComponent {
   // A subject is an observer and an observable which is called by the start button with start$.next()
-  start$ = new Subject()
+  start$ = new Subject();
+
+  //called by stop$.next() on the button
+  stop$ = new Subject();
 
   //standard interval observable which ticks every 1 second
   interval$ = Observable.interval(1000);
 
-  //startInterval tells the start$ subject to start the interval when it is getting a click
-  startInterval$ = this.start$
+  intervalThatStops$ = this.interval$
+    //use takeUntil to make the observable run until the argument has fired
+    .takeUntil(this.stop$);
+
+  constructor() {
+    //start$ subject to start the interval when it is getting a click
     //switchMap switches to the inner observable after the first observable has fired,
     //and only takes values from the most recently projected inner Observable
     //.switchMap((event) => this.interval$);
-    .switchMapTo(this.interval$); //switchMapTo lets you pass in the observable itself without the arrow function
+    this.start$
+    .switchMapTo(this.intervalThatStops$) //switchMapTo lets you pass in the observable itself without the arrow function
+    .subscribe((x) => console.log(x));
 
-  constructor() {
-    //subscribing to the startInterval$ to make it fire
-    this.startInterval$
-      .subscribe((x) => console.log(x));
+
+      //DO NOT do it like this:
+      //Do not use nested observables
+      // Observable.fromEvent(stopButton, 'click')
+      //   .subscribe(() => {
+      //     subscription.unsubscribe();
+      //   })
   }
 }
