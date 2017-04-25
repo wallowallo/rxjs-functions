@@ -71,13 +71,25 @@ export class AppComponent {
       .scan((acc, curr) => curr(acc))
 
   constructor() {
-    Observable.combineLatest(
-      this.timer$,
-      this.input$,
-      (timer: any, input: string) => ({count: timer.count, text: input})
-    )
-      .filter((data) => data.count === parseInt(data.text))
-      .subscribe((x) => console.log(x));
+    this.timer$
+      .do((x) => console.log(x)) //Do operator allows us to do a side effect
+      .takeWhile((data) => data.count <= 4) //stops the timer stream at count 4
+    //   .combineLatest(  //combine latest is waiting for both streams to send values before sending it down the stream
+    //     this.input$.do((x) => console.log(x)),
+    //     (timer: any, input: string) => ({count: timer.count, text: input})
+    //   )
+      .withLatestFrom( //combine latest is waiting for both streams to send values before sending it down the stream
+    //Do operator allows us to do a side effect
+        this.input$.do((x) => console.log(x)),
+        (timer: any, input: string) => ({count: timer.count, text: input})
+      )
+        .filter((data) => data.count === parseInt(data.text)) //filters away all other keyups other than the one that matches the timer
+        .reduce((acc, curr) => acc + 1, 0) //reducer is starting with 0 and doing +1 when the reducer runs, which is every element passed down from filter
+        .subscribe(
+          (x) => console.log(x),
+          err => console.log(err),
+          () => console.log('complete')
+        );
 
       //DO NOT do it like this:
       //Do not use nested observables
